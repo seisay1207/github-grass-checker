@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.example.GitHubContributionCheckerTest" time="3.998" tests="10" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.example.GitHubContributionCheckerTest" time="3.678" tests="10" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="17"/>
     <property name="sun.jnu.encoding" value="UTF-8"/>
@@ -13,7 +13,7 @@
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="JP"/>
     <property name="sun.boot.library.path" value="/Library/Java/JavaVirtualMachines/jdk-17.jdk/Contents/Home/lib"/>
-    <property name="sun.java.command" value="/Users/hidakaseita/development/tool/github-grass-checker/github-grass-checker/target/surefire/surefirebooter-20250629191421842_3.jar /Users/hidakaseita/development/tool/github-grass-checker/github-grass-checker/target/surefire 2025-06-29T19-14-21_754-jvmRun1 surefire-20250629191421842_1tmp surefire_0-20250629191421842_2tmp"/>
+    <property name="sun.java.command" value="/Users/hidakaseita/development/tool/github-grass-checker/github-grass-checker/target/surefire/surefirebooter-20250629230637310_3.jar /Users/hidakaseita/development/tool/github-grass-checker/github-grass-checker/target/surefire 2025-06-29T23-06-37_188-jvmRun1 surefire-20250629230637310_1tmp surefire_0-20250629230637310_2tmp"/>
     <property name="http.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
     <property name="jdk.debug" value="release"/>
     <property name="surefire.test.class.path" value="/Users/hidakaseita/development/tool/github-grass-checker/github-grass-checker/target/test-classes:/Users/hidakaseita/development/tool/github-grass-checker/github-grass-checker/target/classes:/Users/hidakaseita/.m2/repository/junit/junit/3.8.1/junit-3.8.1.jar:/Users/hidakaseita/.m2/repository/org/junit/jupiter/junit-jupiter/5.9.2/junit-jupiter-5.9.2.jar:/Users/hidakaseita/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.9.2/junit-jupiter-api-5.9.2.jar:/Users/hidakaseita/.m2/repository/org/opentest4j/opentest4j/1.2.0/opentest4j-1.2.0.jar:/Users/hidakaseita/.m2/repository/org/junit/platform/junit-platform-commons/1.9.2/junit-platform-commons-1.9.2.jar:/Users/hidakaseita/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/hidakaseita/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.9.2/junit-jupiter-params-5.9.2.jar:/Users/hidakaseita/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.9.2/junit-jupiter-engine-5.9.2.jar:/Users/hidakaseita/.m2/repository/org/junit/platform/junit-platform-engine/1.9.2/junit-platform-engine-1.9.2.jar:/Users/hidakaseita/.m2/repository/com/squareup/okhttp3/okhttp/4.12.0/okhttp-4.12.0.jar:/Users/hidakaseita/.m2/repository/com/squareup/okio/okio/3.6.0/okio-3.6.0.jar:/Users/hidakaseita/.m2/repository/com/squareup/okio/okio-jvm/3.6.0/okio-jvm-3.6.0.jar:/Users/hidakaseita/.m2/repository/org/jetbrains/kotlin/kotlin-stdlib-common/1.9.10/kotlin-stdlib-common-1.9.10.jar:/Users/hidakaseita/.m2/repository/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.8.21/kotlin-stdlib-jdk8-1.8.21.jar:/Users/hidakaseita/.m2/repository/org/jetbrains/kotlin/kotlin-stdlib/1.8.21/kotlin-stdlib-1.8.21.jar:/Users/hidakaseita/.m2/repository/org/jetbrains/annotations/13.0/annotations-13.0.jar:/Users/hidakaseita/.m2/repository/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.8.21/kotlin-stdlib-jdk7-1.8.21.jar:/Users/hidakaseita/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.15.2/jackson-databind-2.15.2.jar:/Users/hidakaseita/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.15.2/jackson-annotations-2.15.2.jar:/Users/hidakaseita/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.15.2/jackson-core-2.15.2.jar:/Users/hidakaseita/.m2/repository/org/slf4j/slf4j-simple/2.0.7/slf4j-simple-2.0.7.jar:/Users/hidakaseita/.m2/repository/org/slf4j/slf4j-api/2.0.7/slf4j-api-2.0.7.jar:"/>
@@ -29,7 +29,7 @@
     <property name="line.separator" value="&#10;"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
-    <property name="surefire.real.class.path" value="/Users/hidakaseita/development/tool/github-grass-checker/github-grass-checker/target/surefire/surefirebooter-20250629191421842_3.jar"/>
+    <property name="surefire.real.class.path" value="/Users/hidakaseita/development/tool/github-grass-checker/github-grass-checker/target/surefire/surefirebooter-20250629230637310_3.jar"/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
     <property name="java.runtime.version" value="17+35-LTS-2724"/>
@@ -55,26 +55,26 @@
     <property name="socksNonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
     <property name="java.class.version" value="61.0"/>
   </properties>
-  <testcase name="testContributionInfoGetters" classname="com.example.GitHubContributionCheckerTest" time="0.349"/>
-  <testcase name="testContributionInfoToString" classname="com.example.GitHubContributionCheckerTest" time="0.004"/>
-  <testcase name="testGetStreakDaysValidUser" classname="com.example.GitHubContributionCheckerTest" time="0.717">
+  <testcase name="testContributionInfoGetters" classname="com.example.GitHubContributionCheckerTest" time="0.265"/>
+  <testcase name="testContributionInfoToString" classname="com.example.GitHubContributionCheckerTest" time="0.003"/>
+  <testcase name="testGetStreakDaysValidUser" classname="com.example.GitHubContributionCheckerTest" time="0.434">
     <system-err><![CDATA[[main] INFO com.example.GitHubContributionChecker - 継続日数(カレンダーAPI): 1日
 ]]></system-err>
   </testcase>
-  <testcase name="testInvalidUserContributionCheck" classname="com.example.GitHubContributionCheckerTest" time="0.292">
+  <testcase name="testInvalidUserContributionCheck" classname="com.example.GitHubContributionCheckerTest" time="0.337">
     <system-err><![CDATA[[main] WARN com.example.GitHubContributionChecker - ユーザーが見つかりません
 ]]></system-err>
   </testcase>
-  <testcase name="testGetContributionInfoValidUser" classname="com.example.GitHubContributionCheckerTest" time="0.723">
+  <testcase name="testGetContributionInfoValidUser" classname="com.example.GitHubContributionCheckerTest" time="0.892">
     <system-err><![CDATA[[main] INFO com.example.GitHubContributionChecker - 今日のContribution数: 1 (実際のアクティビティ: true)
 [main] INFO com.example.GitHubContributionChecker - 継続日数(カレンダーAPI): 1日
 ]]></system-err>
   </testcase>
-  <testcase name="testValidUserContributionCheck" classname="com.example.GitHubContributionCheckerTest" time="0.462">
+  <testcase name="testValidUserContributionCheck" classname="com.example.GitHubContributionCheckerTest" time="0.431">
     <system-err><![CDATA[[main] INFO com.example.GitHubContributionChecker - 今日のContribution数: 1 (実際のアクティビティ: true)
 ]]></system-err>
   </testcase>
-  <testcase name="testNetworkErrorHandling" classname="com.example.GitHubContributionCheckerTest" time="0.746">
+  <testcase name="testNetworkErrorHandling" classname="com.example.GitHubContributionCheckerTest" time="0.684">
     <system-err><![CDATA[[main] ERROR com.example.GitHubContributionChecker - Contributionチェック中にエラーが発生しました: GraphQL API呼び出しが失敗しました: 401
 java.io.IOException: GraphQL API呼び出しが失敗しました: 401
 	at com.example.GitHubContributionChecker.executeGraphQLQuery(GitHubContributionChecker.java:522)
@@ -306,9 +306,9 @@ java.io.IOException: GraphQL API呼び出しが失敗しました: 401
 ]]></system-err>
   </testcase>
   <testcase name="testInitialization" classname="com.example.GitHubContributionCheckerTest" time="0.003"/>
-  <testcase name="testGetContributionInfoInvalidUser" classname="com.example.GitHubContributionCheckerTest" time="0.292">
+  <testcase name="testGetContributionInfoInvalidUser" classname="com.example.GitHubContributionCheckerTest" time="0.279">
     <system-err><![CDATA[[main] WARN com.example.GitHubContributionChecker - ユーザーが見つかりません
 ]]></system-err>
   </testcase>
-  <testcase name="testGetStreakDaysInvalidUser" classname="com.example.GitHubContributionCheckerTest" time="0.381"/>
+  <testcase name="testGetStreakDaysInvalidUser" classname="com.example.GitHubContributionCheckerTest" time="0.34"/>
 </testsuite>

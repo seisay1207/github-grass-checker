@@ -6,13 +6,21 @@ import org.slf4j.LoggerFactory;
 /**
  * GitHub Grass Checker - メインアプリケーション
  * 
- * <p>GitHubのContribution（草）をチェックし、結果をログ出力するメインクラスです。</p>
+ * <p>GitHubのContribution（草）をチェックし、結果をログ出力し、必要に応じてLINE通知を送信するメインクラスです。</p>
  * 
  * <h3>使用方法</h3>
  * <p>以下の環境変数を設定して実行してください：</p>
  * <ul>
- *   <li><code>GITHUB_TOKEN</code> - GitHub Personal Access Token</li>
- *   <li><code>GITHUB_USERNAME</code> - チェック対象のGitHubユーザー名</li>
+ *   <li><code>GITHUB_TOKEN</code> - GitHub Personal Access Token（必須）</li>
+ *   <li><code>GITHUB_USERNAME</code> - チェック対象のGitHubユーザー名（必須）</li>
+ *   <li><code>LINE_CHANNEL_ACCESS_TOKEN</code> - LINE Messaging APIチャネルアクセストークン（オプション）</li>
+ *   <li><code>LINE_USER_ID</code> - 送り先ユーザーID（オプション）</li>
+ * </ul>
+ * 
+ * <h3>動作</h3>
+ * <ul>
+ *   <li>Contributionがある場合：ログ出力のみ</li>
+ *   <li>Contributionがない場合：ログ出力 + LINE通知（LINE Messaging APIトークンが設定されている場合）</li>
  * </ul>
  * 
  * <h3>出力例</h3>
@@ -33,7 +41,8 @@ public class App
      * メインエントリーポイント
      * 
      * <p>環境変数からGitHub Tokenとユーザー名を取得し、
-     * 今日のContribution状況をチェックして結果を出力します。</p>
+     * 今日のContribution状況をチェックして結果を出力し、
+     * 必要に応じてLINE通知を送信します。</p>
      * 
      * @param args コマンドライン引数（使用しません）
      */
@@ -42,6 +51,8 @@ public class App
         // GitHub Tokenは環境変数から取得することを推奨
         String githubToken = System.getenv("GITHUB_TOKEN");
         String username = System.getenv("GITHUB_USERNAME");
+        String lineChannelAccessToken = System.getenv("LINE_CHANNEL_ACCESS_TOKEN");
+        String lineUserId = System.getenv("LINE_USER_ID");
         
         // 環境変数の存在チェック
         if (githubToken == null || githubToken.isEmpty()) {
@@ -60,6 +71,20 @@ public class App
         
         // GitHubContributionCheckerを初期化
         GitHubContributionChecker checker = new GitHubContributionChecker(githubToken);
+        
+        // LINE Messaging Notifierを初期化（トークンとユーザーIDが設定されている場合のみ）
+        LineMessagingNotifier lineNotifier = null;
+        if (lineChannelAccessToken != null && !lineChannelAccessToken.isEmpty() && 
+            lineUserId != null && !lineUserId.isEmpty()) {
+            lineNotifier = new LineMessagingNotifier(lineChannelAccessToken, lineUserId);
+            if (logger.isInfoEnabled()) {
+                logger.info("LINE Messaging API通知機能が有効です");
+            }
+        } else {
+            if (logger.isInfoEnabled()) {
+                logger.info("LINE_CHANNEL_ACCESS_TOKENまたはLINE_USER_IDが設定されていないため、LINE通知機能は無効です");
+            }
+        }
         
         if (logger.isInfoEnabled()) {
             logger.info("GitHubユーザー '{}' の今日のContributionをチェックしています...", username);
@@ -82,6 +107,25 @@ public class App
                 logger.warn("❌ 今日はContributionがありません。草が生えていません。");
                 if (info.getStreakDays() > 0) {
                     logger.warn("💔 継続記録が途切れます。現在の継続日数: {}日", info.getStreakDays());
+                }
+            }
+            
+            // Contributionがない場合、LINE通知を送信
+            if (lineNotifier != null) {
+                if (logger.isInfoEnabled()) {
+                    logger.info("LINE通知を送信しています...");
+                }
+                
+                boolean notificationSent = lineNotifier.sendContributionNotification(username, info);
+                
+                if (notificationSent) {
+                    if (logger.isInfoEnabled()) {
+                        logger.info("LINE通知の送信が完了しました");
+                    }
+                } else {
+                    if (logger.isErrorEnabled()) {
+                        logger.error("LINE通知の送信に失敗しました");
+                    }
                 }
             }
         }
