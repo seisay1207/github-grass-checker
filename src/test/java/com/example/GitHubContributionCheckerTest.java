@@ -15,11 +15,12 @@ public class GitHubContributionCheckerTest {
     
     @BeforeEach
     void setUp() {
-        // テスト用のモックトークン（実際のテストでは環境変数から取得）
+        // テスト用のトークン（実際のテストでは環境変数から取得、なければダミートークン）
         String testToken = System.getenv("GITHUB_TOKEN");
-        if (testToken != null) {
-            checker = new GitHubContributionChecker(testToken);
+        if (testToken == null) {
+            testToken = "dummy_token_for_testing";
         }
+        checker = new GitHubContributionChecker(testToken);
     }
     
     @Test
@@ -31,26 +32,20 @@ public class GitHubContributionCheckerTest {
     @Test
     @DisplayName("有効なGitHubユーザー名でContributionチェックが実行される")
     void testValidUserContributionCheck() {
-        if (checker == null) {
+        String testUsername = System.getenv("GITHUB_USERNAME");
+        if (testUsername == null) {
             // テストスキップ（環境変数が設定されていない場合）
             return;
         }
         
-        String testUsername = System.getenv("GITHUB_USERNAME");
-        if (testUsername != null) {
-            boolean result = checker.hasTodayContribution(testUsername);
-            // 結果はtrue/falseどちらでもOK（実際のContribution状況による）
-            assertTrue(result == true || result == false, "Should return boolean result");
-        }
+        boolean result = checker.hasTodayContribution(testUsername);
+        // 結果はtrue/falseどちらでもOK（実際のContribution状況による）
+        assertTrue(result == true || result == false, "Should return boolean result");
     }
     
     @Test
     @DisplayName("無効なGitHubユーザー名でエラーハンドリングが動作する")
     void testInvalidUserContributionCheck() {
-        if (checker == null) {
-            return;
-        }
-        
         boolean result = checker.hasTodayContribution("invalid_user_12345");
         // 無効なユーザーの場合はfalseが返されることを期待
         assertFalse(result, "Should return false for invalid user");
@@ -61,29 +56,24 @@ public class GitHubContributionCheckerTest {
     @Test
     @DisplayName("有効なユーザーで継続日数が取得できる")
     void testGetStreakDaysValidUser() {
-        if (checker == null) {
+        String testUsername = System.getenv("GITHUB_USERNAME");
+        if (testUsername == null) {
+            // テストスキップ（環境変数が設定されていない場合）
             return;
         }
         
-        String testUsername = System.getenv("GITHUB_USERNAME");
-        if (testUsername != null) {
-            int streakDays = checker.getStreakDays(testUsername);
-            
-            // 観点1: 継続日数は0以上の整数であることを確認
-            assertTrue(streakDays >= 0, "Streak days should be non-negative");
-            
-            // 観点2: 継続日数は現実的な範囲内であることを確認（365日を超えることはない）
-            assertTrue(streakDays <= 365, "Streak days should not exceed 365 days");
-        }
+        int streakDays = checker.getStreakDays(testUsername);
+        
+        // 観点1: 継続日数は0以上の整数であることを確認
+        assertTrue(streakDays >= 0, "Streak days should be non-negative");
+        
+        // 観点2: 継続日数は現実的な範囲内であることを確認（365日を超えることはない）
+        assertTrue(streakDays <= 365, "Streak days should not exceed 365 days");
     }
     
     @Test
     @DisplayName("無効なユーザーで継続日数が0を返す")
     void testGetStreakDaysInvalidUser() {
-        if (checker == null) {
-            return;
-        }
-        
         int streakDays = checker.getStreakDays("invalid_user_12345");
         
         // 観点3: 無効なユーザーの場合は0を返すことを確認
@@ -95,39 +85,34 @@ public class GitHubContributionCheckerTest {
     @Test
     @DisplayName("有効なユーザーでContributionInfoが取得できる")
     void testGetContributionInfoValidUser() {
-        if (checker == null) {
+        String testUsername = System.getenv("GITHUB_USERNAME");
+        if (testUsername == null) {
+            // テストスキップ（環境変数が設定されていない場合）
             return;
         }
         
-        String testUsername = System.getenv("GITHUB_USERNAME");
-        if (testUsername != null) {
-            GitHubContributionChecker.ContributionInfo info = checker.getContributionInfo(testUsername);
-            
-            // 観点4: ContributionInfoオブジェクトが正常に作成されることを確認
-            assertNotNull(info, "ContributionInfo should not be null");
-            
-            // 観点5: Contributionの有無はboolean値であることを確認
-            assertTrue(info.hasContribution() == true || info.hasContribution() == false, 
-                "hasContribution should return boolean value");
-            
-            // 観点6: Contribution数は0以上の整数であることを確認
-            assertTrue(info.getContributionCount() >= 0, "Contribution count should be non-negative");
-            
-            // 観点7: 継続日数は0以上の整数であることを確認
-            assertTrue(info.getStreakDays() >= 0, "Streak days should be non-negative");
-            
-            // 観点8: 継続日数は現実的な範囲内であることを確認
-            assertTrue(info.getStreakDays() <= 365, "Streak days should not exceed 365 days");
-        }
+        GitHubContributionChecker.ContributionInfo info = checker.getContributionInfo(testUsername);
+        
+        // 観点4: ContributionInfoオブジェクトが正常に作成されることを確認
+        assertNotNull(info, "ContributionInfo should not be null");
+        
+        // 観点5: Contributionの有無はboolean値であることを確認
+        assertTrue(info.hasContribution() == true || info.hasContribution() == false, 
+            "hasContribution should return boolean value");
+        
+        // 観点6: Contribution数は0以上の整数であることを確認
+        assertTrue(info.getContributionCount() >= 0, "Contribution count should be non-negative");
+        
+        // 観点7: 継続日数は0以上の整数であることを確認
+        assertTrue(info.getStreakDays() >= 0, "Streak days should be non-negative");
+        
+        // 観点8: 継続日数は現実的な範囲内であることを確認
+        assertTrue(info.getStreakDays() <= 365, "Streak days should not exceed 365 days");
     }
     
     @Test
     @DisplayName("無効なユーザーでContributionInfoが適切なデフォルト値を返す")
     void testGetContributionInfoInvalidUser() {
-        if (checker == null) {
-            return;
-        }
-        
         GitHubContributionChecker.ContributionInfo info = checker.getContributionInfo("invalid_user_12345");
         
         // 観点9: 無効なユーザーの場合、適切なデフォルト値が設定されることを確認
@@ -183,10 +168,6 @@ public class GitHubContributionCheckerTest {
     @Test
     @DisplayName("ネットワークエラー時の適切なエラーハンドリング")
     void testNetworkErrorHandling() {
-        if (checker == null) {
-            return;
-        }
-        
         // 観点12: ネットワークエラーやAPIエラーが発生した場合でも、
         // アプリケーションがクラッシュせずに適切なデフォルト値を返すことを確認
         
