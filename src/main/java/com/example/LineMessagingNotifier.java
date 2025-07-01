@@ -121,7 +121,7 @@ public class LineMessagingNotifier {
             if (info.getStreakDays() > 0) {
                 message.append("💔 継続記録が途切れます\n");
                 message.append("📈 これまでの継続日数: ").append(info.getStreakDays()).append("日\n");
-                message.append("💡 明日は草を生やしましょう！");
+                message.append("💡 今すぐ草を生やしましょう！");
             } else {
                 message.append("💡 今日から草を生やし始めましょう！\n");
                 message.append("🚀 小さな一歩から始めることが大切です");
