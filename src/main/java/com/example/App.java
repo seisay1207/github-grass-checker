@@ -1,5 +1,12 @@
 package com.example;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +23,10 @@ import org.slf4j.LoggerFactory;
  *   <li><code>LINE_CHANNEL_ACCESS_TOKEN</code> - LINE Messaging APIチャネルアクセストークン（オプション）</li>
  *   <li><code>LINE_USER_ID</code> - 送り先ユーザーID（オプション）</li>
  * </ul>
+ * 
+ * <p>または、プロジェクトルートに<code>.env</code>ファイルを作成して設定することもできます。</p>
+ * 
+ * <p>AWS Lambda環境では、AWS Systems Manager Parameter Storeから設定を自動的に読み込みます。</p>
  * 
  * <h3>動作</h3>
  * <ul>
@@ -38,6 +49,110 @@ public class App
     private static final Logger logger = LoggerFactory.getLogger(App.class);
     
     /**
+     * AWS Lambda環境かどうかを判定
+     */
+    private static boolean isAwsLambda() {
+        return System.getenv("AWS_LAMBDA_FUNCTION_NAME") != null;
+    }
+    
+    /**
+     * .envファイルから環境変数を読み込む
+     */
+    private static void loadEnvFile() {
+        Path envPath = Paths.get(".env");
+        if (Files.exists(envPath)) {
+            try {
+                Map<String, String> envVars = new HashMap<>();
+                Files.lines(envPath)
+                    .filter(line -> !line.trim().isEmpty() && !line.trim().startsWith("#"))
+                    .forEach(line -> {
+                        String[] parts = line.split("=", 2);
+                        if (parts.length == 2) {
+                            String key = parts[0].trim();
+                            String value = parts[1].trim();
+                            envVars.put(key, value);
+                        }
+                    });
+                
+                // 環境変数が設定されていない場合のみ.envファイルの値を設定
+                envVars.forEach((key, value) -> {
+                    if (System.getenv(key) == null) {
+                        System.setProperty(key, value);
+                    }
+                });
+                
+                if (logger.isInfoEnabled()) {
+                    logger.info(".envファイルを読み込みました");
+                }
+            } catch (IOException e) {
+                if (logger.isWarnEnabled()) {
+                    logger.warn(".envファイルの読み込みに失敗しました: {}", e.getMessage());
+                }
+            }
+        }
+    }
+    
+    /**
+     * 環境変数またはシステムプロパティから値を取得
+     */
+    private static String getEnvOrProperty(String key) {
+        String value = System.getenv(key);
+        if (value == null || value.isEmpty()) {
+            value = System.getProperty(key);
+        }
+        return value;
+    }
+    
+    /**
+     * 設定値を取得（AWS環境またはローカル環境）
+     */
+    private static ConfigValues getConfigValues() {
+        ConfigValues config = new ConfigValues();
+        
+        if (isAwsLambda()) {
+            // AWS Lambda環境ではParameter Storeから取得
+            try {
+                AwsConfigManager awsConfig = new AwsConfigManager();
+                config.githubToken = awsConfig.getGitHubToken();
+                config.githubUsername = awsConfig.getGitHubUsername();
+                config.lineChannelAccessToken = awsConfig.getLineChannelAccessToken();
+                config.lineUserId = awsConfig.getLineUserId();
+                
+                if (logger.isInfoEnabled()) {
+                    logger.info("AWS Parameter Storeから設定を読み込みました");
+                }
+            } catch (Exception e) {
+                if (logger.isErrorEnabled()) {
+                    logger.error("AWS Parameter Storeからの設定読み込みに失敗しました", e);
+                }
+            }
+        } else {
+            // ローカル環境では.envファイルまたは環境変数から取得
+            loadEnvFile();
+            config.githubToken = getEnvOrProperty("GITHUB_TOKEN");
+            config.githubUsername = getEnvOrProperty("GITHUB_USERNAME");
+            config.lineChannelAccessToken = getEnvOrProperty("LINE_CHANNEL_ACCESS_TOKEN");
+            config.lineUserId = getEnvOrProperty("LINE_USER_ID");
+            
+            if (logger.isInfoEnabled()) {
+                logger.info("ローカル環境から設定を読み込みました");
+            }
+        }
+        
+        return config;
+    }
+    
+    /**
+     * 設定値を保持する内部クラス
+     */
+    private static class ConfigValues {
+        String githubToken;
+        String githubUsername;
+        String lineChannelAccessToken;
+        String lineUserId;
+    }
+    
+    /**
      * メインエントリーポイント
      * 
      * <p>環境変数からGitHub Tokenとユーザー名を取得し、
@@ -48,35 +163,32 @@ public class App
      */
     public static void main( String[] args )
     {
-        // GitHub Tokenは環境変数から取得することを推奨
-        String githubToken = System.getenv("GITHUB_TOKEN");
-        String username = System.getenv("GITHUB_USERNAME");
-        String lineChannelAccessToken = System.getenv("LINE_CHANNEL_ACCESS_TOKEN");
-        String lineUserId = System.getenv("LINE_USER_ID");
+        // 設定値を取得
+        ConfigValues config = getConfigValues();
         
         // 環境変数の存在チェック
-        if (githubToken == null || githubToken.isEmpty()) {
+        if (config.githubToken == null || config.githubToken.isEmpty()) {
             if (logger.isErrorEnabled()) {
-                logger.error("GITHUB_TOKEN環境変数が設定されていません");
+                logger.error("GITHUB_TOKENが設定されていません");
             }
             System.exit(1);
         }
         
-        if (username == null || username.isEmpty()) {
+        if (config.githubUsername == null || config.githubUsername.isEmpty()) {
             if (logger.isErrorEnabled()) {
-                logger.error("GITHUB_USERNAME環境変数が設定されていません");
+                logger.error("GITHUB_USERNAMEが設定されていません");
             }
             System.exit(1);
         }
         
         // GitHubContributionCheckerを初期化
-        GitHubContributionChecker checker = new GitHubContributionChecker(githubToken);
+        GitHubContributionChecker checker = new GitHubContributionChecker(config.githubToken);
         
         // LINE Messaging Notifierを初期化（トークンとユーザーIDが設定されている場合のみ）
         LineMessagingNotifier lineNotifier = null;
-        if (lineChannelAccessToken != null && !lineChannelAccessToken.isEmpty() && 
-            lineUserId != null && !lineUserId.isEmpty()) {
-            lineNotifier = new LineMessagingNotifier(lineChannelAccessToken, lineUserId);
+        if (config.lineChannelAccessToken != null && !config.lineChannelAccessToken.isEmpty() && 
+            config.lineUserId != null && !config.lineUserId.isEmpty()) {
+            lineNotifier = new LineMessagingNotifier(config.lineChannelAccessToken, config.lineUserId);
             if (logger.isInfoEnabled()) {
                 logger.info("LINE Messaging API通知機能が有効です");
             }
@@ -87,11 +199,11 @@ public class App
         }
         
         if (logger.isInfoEnabled()) {
-            logger.info("GitHubユーザー '{}' の今日のContributionをチェックしています...", username);
+            logger.info("GitHubユーザー '{}' の今日のContributionをチェックしています...", config.githubUsername);
         }
         
         // Contribution情報を取得（継続日数含む）
-        GitHubContributionChecker.ContributionInfo info = checker.getContributionInfo(username);
+        GitHubContributionChecker.ContributionInfo info = checker.getContributionInfo(config.githubUsername);
         
         // 結果を出力
         if (info.hasContribution()) {
@@ -109,23 +221,23 @@ public class App
                     logger.warn("💔 継続記録が途切れます。現在の継続日数: {}日", info.getStreakDays());
                 }
             }
+        }
+        
+        // 常にLINE通知を送信（Contributionの有無に関係なく）
+        if (lineNotifier != null) {
+            if (logger.isInfoEnabled()) {
+                logger.info("LINE通知を送信しています...");
+            }
             
-            // Contributionがない場合、LINE通知を送信
-            if (lineNotifier != null) {
+            boolean notificationSent = lineNotifier.sendContributionNotification(config.githubUsername, info);
+            
+            if (notificationSent) {
                 if (logger.isInfoEnabled()) {
-                    logger.info("LINE通知を送信しています...");
+                    logger.info("LINE通知の送信が完了しました");
                 }
-                
-                boolean notificationSent = lineNotifier.sendContributionNotification(username, info);
-                
-                if (notificationSent) {
-                    if (logger.isInfoEnabled()) {
-                        logger.info("LINE通知の送信が完了しました");
-                    }
-                } else {
-                    if (logger.isErrorEnabled()) {
-                        logger.error("LINE通知の送信に失敗しました");
-                    }
+            } else {
+                if (logger.isErrorEnabled()) {
+                    logger.error("LINE通知の送信に失敗しました");
                 }
             }
         }

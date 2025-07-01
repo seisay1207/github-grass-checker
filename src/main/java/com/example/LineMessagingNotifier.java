@@ -94,24 +94,40 @@ public class LineMessagingNotifier {
 
     private String buildContributionMessage(String username, GitHubContributionChecker.ContributionInfo info) {
         StringBuilder message = new StringBuilder();
+        
+        // 現在の日時を取得
+        java.time.LocalDate today = java.time.LocalDate.now();
+        String todayStr = today.format(java.time.format.DateTimeFormatter.ofPattern("M月d日"));
+        
         if (info.hasContribution()) {
-            message.append("✅ GitHub Contribution チェック結果\n");
-            message.append("ユーザー: ").append(username).append("\n");
-            message.append("今日はContributionがあります！草が生えています。\n");
-            message.append("📊 今日のContribution数: ").append(info.getContributionCount()).append("件\n");
+            message.append("🌱 GitHub草チェック結果 ").append(todayStr).append("\n");
+            message.append("━━━━━━━━━━━━━━━━━━━━\n");
+            message.append("👤 ").append(username).append("\n");
+            message.append("✅ 今日は草が生えています！\n");
+            message.append("📊 Contribution数: ").append(info.getContributionCount()).append("件\n");
             if (info.getStreakDays() > 0) {
-                message.append("🔥 継続日数: ").append(info.getStreakDays()).append("日");
+                message.append("🔥 継続日数: ").append(info.getStreakDays()).append("日連続！\n");
+                if (info.getStreakDays() >= 7) {
+                    message.append("🎉 素晴らしい継続力です！");
+                } else if (info.getStreakDays() >= 3) {
+                    message.append("💪 頑張っていますね！");
+                }
             }
         } else {
-            message.append("❌ GitHub Contribution チェック結果\n");
-            message.append("ユーザー: ").append(username).append("\n");
-            message.append("今日はContributionがありません。草が生えていません。\n");
+            message.append("🌱 GitHub草チェック結果 ").append(todayStr).append("\n");
+            message.append("━━━━━━━━━━━━━━━━━━━━\n");
+            message.append("👤 ").append(username).append("\n");
+            message.append("❌ 今日は草が生えていません\n");
             if (info.getStreakDays() > 0) {
-                message.append("💔 継続記録が途切れます。現在の継続日数: ").append(info.getStreakDays()).append("日");
+                message.append("💔 継続記録が途切れます\n");
+                message.append("📈 これまでの継続日数: ").append(info.getStreakDays()).append("日\n");
+                message.append("💡 明日は草を生やしましょう！");
             } else {
-                message.append("💔 継続記録はありません");
+                message.append("💡 今日から草を生やし始めましょう！\n");
+                message.append("🚀 小さな一歩から始めることが大切です");
             }
         }
+        
         return message.toString();
     }
 

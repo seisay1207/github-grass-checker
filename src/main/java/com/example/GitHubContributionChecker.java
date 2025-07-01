@@ -216,16 +216,66 @@ public class GitHubContributionChecker {
             }
             // 日付降順にソート
             allDays.sort((a, b) -> b.path("date").asText().compareTo(a.path("date").asText()));
+            
+            // 今日の日付を取得
+            String today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+            
             int streak = 0;
+            boolean foundToday = false;
+            
             for (JsonNode day : allDays) {
-                if (day.path("contributionCount").asInt() > 0) {
-                    streak++;
-                } else {
-                    break;
+                String date = day.path("date").asText();
+                int contributionCount = day.path("contributionCount").asInt();
+                
+                // 今日の日付を見つけたかチェック
+                if (date.equals(today)) {
+                    foundToday = true;
+                    // 今日Contributionがある場合はカウント
+                    if (contributionCount > 0) {
+                        streak++;
+                    }
+                } else if (foundToday) {
+                    // 今日の日付を過ぎた後（昨日以前）は、Contributionがある日をカウント
+                    if (contributionCount > 0) {
+                        streak++;
+                    } else {
+                        // Contributionがない日が見つかったら終了
+                        break;
+                    }
                 }
             }
+            
+            // 今日Contributionがない場合は、昨日までの継続日数を返す
+            if (foundToday) {
+                // 今日の日付を見つけた場合、今日のContributionは既にカウント済み
+                // または今日Contributionがない場合は0のまま
+            } else {
+                // 今日の日付が見つからない場合（データが古い場合）は、
+                // 最新の日付から連続日数を計算
+                for (JsonNode day : allDays) {
+                    int contributionCount = day.path("contributionCount").asInt();
+                    if (contributionCount > 0) {
+                        streak++;
+                    } else {
+                        break;
+                    }
+                }
+            }
+            
             if (logger.isInfoEnabled()) {
-                logger.info("継続日数(カレンダーAPI): {}日", streak);
+                logger.info("継続日数(カレンダーAPI): {}日 (今日の日付: {})", streak, today);
+                // デバッグ用: 最新の5日間のContribution状況をログ出力
+                if (logger.isDebugEnabled()) {
+                    logger.debug("最新5日間のContribution状況:");
+                    int count = 0;
+                    for (JsonNode day : allDays) {
+                        if (count >= 5) break;
+                        String date = day.path("date").asText();
+                        int contributionCount = day.path("contributionCount").asInt();
+                        logger.debug("  {}: {}件", date, contributionCount);
+                        count++;
+                    }
+                }
             }
             return streak;
         } catch (Exception e) {
@@ -469,7 +519,8 @@ public class GitHubContributionChecker {
         // 実際のアクティビティがある場合のみContributionとしてカウント
         boolean hasContribution = hasActualActivity;
         int actualContributionCount = hasActualActivity ? totalContributions : 0;
-        int streakDays = hasActualActivity ? getStreakDays(username) : 0;
+        // 継続日数は常に計算する（今日Contributionがない場合でも昨日までの継続日数を表示）
+        int streakDays = getStreakDays(username);
         
         return new ContributionInfo(hasContribution, actualContributionCount, streakDays);
     }
