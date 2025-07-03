@@ -100,8 +100,8 @@ public class LineMessagingNotifier {
         String todayStr = today.format(java.time.format.DateTimeFormatter.ofPattern("M月d日"));
         
         if (info.hasContribution()) {
-            message.append("🌱 GitHub草チェック結果 ").append(todayStr).append("\n");
-            message.append("━━━━━━━━━━━━━━━━━━━━\n");
+            message.append("🌱 草チェック ").append(todayStr).append("\n");
+            message.append("━━━━━━━━━━━━━━\n");
             message.append("👤 ").append(username).append("\n");
             message.append("✅ 今日は草が生えています！\n");
             message.append("📊 Contribution数: ").append(info.getContributionCount()).append("件\n");
@@ -114,8 +114,8 @@ public class LineMessagingNotifier {
                 }
             }
         } else {
-            message.append("🌱 GitHub草チェック結果 ").append(todayStr).append("\n");
-            message.append("━━━━━━━━━━━━━━━━━━━━\n");
+            message.append("🌱 草チェック ").append(todayStr).append("\n");
+            message.append("━━━━━━━━━━━━━━\n");
             message.append("👤 ").append(username).append("\n");
             message.append("❌ 今日は草が生えていません\n");
             if (info.getStreakDays() > 0) {

@@ -512,17 +512,77 @@ public class GitHubContributionChecker {
         // 実際のアクティビティがあるかチェック（リポジトリ作成はoccurredAtで厳密判定）
         boolean hasActualActivity = hasActualContributions(contributions, fromDate, toDate);
         
+        // カレンダーAPIで今日のContributionがあるかチェック
+        int calendarContributionCount = getCalendarContributionCount(username);
+        boolean hasCalendarContribution = calendarContributionCount > 0;
+        
         if (logger.isInfoEnabled()) {
-            logger.info("今日のContribution数: {} (実際のアクティビティ: {})", totalContributions, hasActualActivity);
+            logger.info("今日のContribution数: {} (実際のアクティビティ: {}, カレンダー: {}件)", 
+                totalContributions, hasActualActivity, calendarContributionCount);
         }
         
-        // 実際のアクティビティがある場合のみContributionとしてカウント
-        boolean hasContribution = hasActualActivity;
-        int actualContributionCount = hasActualActivity ? totalContributions : 0;
+        // 実際のアクティビティがある場合、またはカレンダーAPIでContributionが表示されている場合はContributionとしてカウント
+        boolean hasContribution = hasActualActivity || hasCalendarContribution;
+        // カレンダーAPIでContributionが検出された場合はその件数を使用、そうでなければ実際のアクティビティの件数を使用
+        int actualContributionCount = hasCalendarContribution ? calendarContributionCount : (hasActualActivity ? totalContributions : 0);
         // 継続日数は常に計算する（今日Contributionがない場合でも昨日までの継続日数を表示）
         int streakDays = getStreakDays(username);
         
         return new ContributionInfo(hasContribution, actualContributionCount, streakDays);
+    }
+
+    /**
+     * カレンダーAPIで今日のContributionがあるかチェックします
+     * 
+     * @param username GitHubのユーザー名
+     * @return カレンダーAPIで今日のContributionが表示されている場合はtrue
+     */
+    private boolean checkCalendarContribution(String username) {
+        return getCalendarContributionCount(username) > 0;
+    }
+
+    /**
+     * カレンダーAPIで今日のContribution件数を取得します
+     * 
+     * @param username GitHubのユーザー名
+     * @return カレンダーAPIで今日のContribution件数
+     */
+    private int getCalendarContributionCount(String username) {
+        try {
+            String query = String.format("{\"query\": \"%s\", \"variables\": {\"username\": \"%s\"}}",
+                    CALENDAR_QUERY.replace("\n", "\\n").replace("\"", "\\\""), username);
+            JsonNode response = executeGraphQLQuery(query);
+            JsonNode days = response
+                .path("data").path("user")
+                .path("contributionsCollection")
+                .path("contributionCalendar")
+                .path("weeks");
+            if (days.isMissingNode() || !days.isArray()) return 0;
+            
+            // 今日の日付を取得
+            String today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+            
+            // 最新の週から今日のContributionを探す
+            for (JsonNode week : days) {
+                for (JsonNode day : week.path("contributionDays")) {
+                    String date = day.path("date").asText();
+                    int count = day.path("contributionCount").asInt();
+                    if (date.equals(today) && count > 0) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("カレンダーAPIで今日({})のContributionを検出: {}件", today, count);
+                        }
+                        return count;
+                    }
+                }
+            }
+            
+            return 0;
+        } catch (Exception e) {
+            if (logger.isErrorEnabled()) {
+                logger.error("カレンダーAPIチェック中にエラーが発生しました: {}", e.getMessage(), e);
+            }
+            return 0;
+        }
     }
 
     /**
