@@ -1,0 +1,99 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "lambda:CreateFunction",
+        "lambda:UpdateFunctionCode",
+        "lambda:UpdateFunctionConfiguration",
+        "lambda:GetFunction",
+        "lambda:DeleteFunction",
+        "lambda:InvokeFunction",
+        "lambda:ListFunctions",
+        "lambda:AddPermission",
+        "lambda:RemovePermission"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreateRole",
+        "iam:AttachRolePolicy",
+        "iam:GetRole",
+        "iam:DeleteRole",
+        "iam:DetachRolePolicy",
+        "iam:PassRole"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ssm:PutParameter",
+        "ssm:GetParameter",
+        "ssm:DeleteParameter",
+        "ssm:ListParameters"
+      ],
+      "Resource": "arn:aws:ssm:*:*:parameter/github-grass-checker/*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "events:PutRule",
+        "events:PutTargets",
+        "events:DeleteRule",
+        "events:DeleteTargets",
+        "events:ListRules",
+        "events:ListTargetsByRule",
+        "events:RemoveTargets"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "scheduler:CreateSchedule",
+        "scheduler:UpdateSchedule",
+        "scheduler:DeleteSchedule",
+        "scheduler:GetSchedule",
+        "scheduler:ListSchedules",
+        "scheduler:CreateScheduleInvocation",
+        "scheduler:ListScheduleInvocations"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        "logs:DescribeLogGroups",
+        "logs:DescribeLogStreams",
+        "logs:GetLogEvents",
+        "logs:FilterLogEvents",
+        "logs:StartQuery",
+        "logs:StopQuery",
+        "logs:GetQueryResults"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["logs:DeleteLogGroup", "logs:DeleteLogStream"],
+      "Resource": "arn:aws:logs:*:*:log-group:/aws/lambda/github-grass-checker:*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["kms:Decrypt"],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "kms:ViaService": "ssm.*.amazonaws.com"
+        }
+      }
+    }
+  ]
+}

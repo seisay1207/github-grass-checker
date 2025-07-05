@@ -5,12 +5,11 @@ import org.slf4j.LoggerFactory;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.amazonaws.services.lambda.runtime.events.ScheduledEvent;
 
 /**
  * AWS Lambda用のハンドラークラス
  * 
- * <p>CloudWatch Eventsから定期実行される際のエントリーポイントです。</p>
+ * <p>EventBridge Schedulerから定期実行される際のエントリーポイントです。</p>
  * 
  * <h3>設定</h3>
  * <p>AWS Systems Manager Parameter Storeに以下のパラメータを設定してください：</p>
@@ -28,14 +27,14 @@ import com.amazonaws.services.lambda.runtime.events.ScheduledEvent;
  *   <li><code>kms:Decrypt</code> - SecureStringパラメータの復号化（KMS使用時）</li>
  * </ul>
  */
-public class LambdaHandler implements RequestHandler<ScheduledEvent, String> {
+public class LambdaHandler implements RequestHandler<Object, String> {
     private static final Logger logger = LoggerFactory.getLogger(LambdaHandler.class);
     
     @Override
-    public String handleRequest(ScheduledEvent event, Context context) {
+    public String handleRequest(Object event, Context context) {
         try {
             if (logger.isInfoEnabled()) {
-                logger.info("Lambda関数が開始されました。Event: {}", event.getDetail());
+                logger.info("Lambda関数が開始されました。Event: {}", event);
             }
             
             // メインアプリケーションを実行
