@@ -156,6 +156,11 @@ public class GitHubContributionChecker {
             
             return parseContributionResponse(response);
             
+        } catch (GitHubTokenException e) {
+            if (logger.isErrorEnabled()) {
+                logger.error("GitHubトークンエラー: {}", e.getMessage());
+            }
+            throw new RuntimeException("GitHubトークンが無効です", e);
         } catch (Exception e) {
             if (logger.isErrorEnabled()) {
                 logger.error("Contributionチェック中にエラーが発生しました: {}", e.getMessage(), e);
@@ -183,6 +188,11 @@ public class GitHubContributionChecker {
             
             return parseContributionInfo(response, username);
             
+        } catch (GitHubTokenException e) {
+            if (logger.isErrorEnabled()) {
+                logger.error("GitHubトークンエラー: {}", e.getMessage());
+            }
+            throw new RuntimeException("GitHubトークンが無効です", e);
         } catch (Exception e) {
             if (logger.isErrorEnabled()) {
                 logger.error("Contribution情報取得中にエラーが発生しました: {}", e.getMessage(), e);
@@ -278,6 +288,11 @@ public class GitHubContributionChecker {
                 }
             }
             return streak;
+        } catch (GitHubTokenException e) {
+            if (logger.isErrorEnabled()) {
+                logger.error("GitHubトークンエラー: {}", e.getMessage());
+            }
+            throw new RuntimeException("GitHubトークンが無効です", e);
         } catch (Exception e) {
             if (logger.isErrorEnabled()) {
                 logger.error("継続日数計算中にエラーが発生しました: {}", e.getMessage(), e);
@@ -532,16 +547,6 @@ public class GitHubContributionChecker {
     }
 
     /**
-     * カレンダーAPIで今日のContributionがあるかチェックします
-     * 
-     * @param username GitHubのユーザー名
-     * @return カレンダーAPIで今日のContributionが表示されている場合はtrue
-     */
-    private boolean checkCalendarContribution(String username) {
-        return getCalendarContributionCount(username) > 0;
-    }
-
-    /**
      * カレンダーAPIで今日のContribution件数を取得します
      * 
      * @param username GitHubのユーザー名
@@ -617,8 +622,9 @@ public class GitHubContributionChecker {
      * @param query GraphQLクエリのJSON文字列
      * @return GraphQL APIのレスポンス
      * @throws IOException HTTP通信エラーが発生した場合
+     * @throws GitHubTokenException GitHubトークンが無効な場合
      */
-    private JsonNode executeGraphQLQuery(String query) throws IOException {
+    private JsonNode executeGraphQLQuery(String query) throws IOException, GitHubTokenException {
         RequestBody body = RequestBody.create(query, MediaType.parse("application/json; charset=utf-8"));
         
         Request request = new Request.Builder()
@@ -630,6 +636,16 @@ public class GitHubContributionChecker {
         
         try (Response response = httpClient.newCall(request).execute()) {
             if (!response.isSuccessful()) {
+                String responseBody = response.body() != null ? response.body().string() : "";
+                
+                // 401エラーの場合はトークン無効と判定
+                if (response.code() == 401) {
+                    if (logger.isErrorEnabled()) {
+                        logger.error("GitHub API認証エラー (401): {}", responseBody);
+                    }
+                    throw new GitHubTokenException("GitHub Personal Access Tokenが無効または期限切れです。トークンをリジェネレートしてください。");
+                }
+                
                 throw new IOException("GraphQL API呼び出しが失敗しました: " + response.code());
             }
             
@@ -702,6 +718,19 @@ public class GitHubContributionChecker {
         public String toString() {
             return String.format("ContributionInfo{hasContribution=%s, count=%d, streak=%d}", 
                 hasContribution, contributionCount, streakDays);
+        }
+    }
+
+    /**
+     * GitHub Personal Access Tokenが無効または期限切れの場合にスローされる例外
+     */
+    public static class GitHubTokenException extends Exception {
+        public GitHubTokenException(String message) {
+            super(message);
+        }
+        
+        public GitHubTokenException(String message, Throwable cause) {
+            super(message, cause);
         }
     }
 } 

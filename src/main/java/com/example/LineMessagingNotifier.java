@@ -92,6 +92,17 @@ public class LineMessagingNotifier {
         return sendMessage(message);
     }
 
+    /**
+     * GitHubトークンエラーの通知メッセージを送信
+     * 
+     * @param username GitHubのユーザー名
+     * @return 送信成功でtrue
+     */
+    public boolean sendTokenErrorNotification(String username) {
+        String message = buildTokenErrorMessage(username);
+        return sendMessage(message);
+    }
+
     private String buildContributionMessage(String username, GitHubContributionChecker.ContributionInfo info) {
         StringBuilder message = new StringBuilder();
         
@@ -127,6 +138,35 @@ public class LineMessagingNotifier {
                 message.append("🚀 小さな一歩から始めることが大切です");
             }
         }
+        
+        return message.toString();
+    }
+
+    /**
+     * GitHubトークンエラーの通知メッセージを構築
+     * 
+     * @param username GitHubのユーザー名
+     * @return トークンエラー通知メッセージ
+     */
+    private String buildTokenErrorMessage(String username) {
+        StringBuilder message = new StringBuilder();
+        
+        // 現在の日時を取得
+        java.time.LocalDate today = java.time.LocalDate.now();
+        String todayStr = today.format(java.time.format.DateTimeFormatter.ofPattern("M月d日"));
+        
+        message.append("🚨 GitHub API エラー ").append(todayStr).append("\n");
+        message.append("━━━━━━━━━━━━━━\n");
+        message.append("👤 ").append(username).append("\n");
+        message.append("❌ GitHubトークンが無効です\n");
+        message.append("🔧 対処方法:\n");
+        message.append("1. GitHubにログイン\n");
+        message.append("2. Settings → Developer settings\n");
+        message.append("3. Personal access tokens → Tokens (classic)\n");
+        message.append("4. 新しいトークンを生成\n");
+        message.append("5. .envファイルのGITHUB_TOKENを更新\n");
+        message.append("\n");
+        message.append("💡 トークンがリジェネレートされました");
         
         return message.toString();
     }

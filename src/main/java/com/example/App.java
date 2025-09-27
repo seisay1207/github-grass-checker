@@ -145,7 +145,7 @@ public class App
     /**
      * 設定値を保持する内部クラス
      */
-    private static class ConfigValues {
+    private static final class ConfigValues {
         String githubToken;
         String githubUsername;
         String lineChannelAccessToken;
@@ -203,7 +203,29 @@ public class App
         }
         
         // Contribution情報を取得（継続日数含む）
-        GitHubContributionChecker.ContributionInfo info = checker.getContributionInfo(config.githubUsername);
+        GitHubContributionChecker.ContributionInfo info;
+        boolean tokenError = false;
+        
+        try {
+            info = checker.getContributionInfo(config.githubUsername);
+        } catch (RuntimeException e) {
+            if (e.getCause() instanceof GitHubContributionChecker.GitHubTokenException) {
+                // GitHubトークンエラーの場合
+                tokenError = true;
+                info = new GitHubContributionChecker.ContributionInfo(false, 0, 0);
+                
+                if (logger.isErrorEnabled()) {
+                    logger.error("GitHubトークンが無効です: {}", e.getCause().getMessage());
+                }
+            } else {
+                // その他のエラーの場合
+                info = new GitHubContributionChecker.ContributionInfo(false, 0, 0);
+                
+                if (logger.isErrorEnabled()) {
+                    logger.error("Contribution情報の取得に失敗しました: {}", e.getMessage());
+                }
+            }
+        }
         
         // 結果を出力
         if (info.hasContribution()) {
@@ -229,7 +251,15 @@ public class App
                 logger.info("LINE通知を送信しています...");
             }
             
-            boolean notificationSent = lineNotifier.sendContributionNotification(config.githubUsername, info);
+            boolean notificationSent;
+            
+            if (tokenError) {
+                // GitHubトークンエラーの場合は専用の通知を送信
+                notificationSent = lineNotifier.sendTokenErrorNotification(config.githubUsername);
+            } else {
+                // 通常のContribution通知を送信
+                notificationSent = lineNotifier.sendContributionNotification(config.githubUsername, info);
+            }
             
             if (notificationSent) {
                 if (logger.isInfoEnabled()) {
